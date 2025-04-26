@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ export interface BlogPost {
   excerpt: string;
   content: string;
   coverImage?: string;
+  category: string;
   author: {
     name: string;
     avatar?: string;

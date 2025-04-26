@@ -25,7 +25,7 @@ const Index = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <section className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6">Aurora Blog</h1>
+        <h1 className="text-4xl md:text-5xl font-bold mb-6">Benjamin's Blog</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Explore beautiful articles and stories on web development, design, and technology.
         </p>

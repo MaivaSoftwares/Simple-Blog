@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +8,9 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Post from "./pages/Post";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
+import AdminPostEditor from "./pages/AdminPostEditor";
+import { RequireAuth } from "./components/RequireAuth";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 
@@ -27,7 +29,10 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/post/:id" element={<Post />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route path="/login" element={<AdminLogin />} />
+                <Route path="/admin/post/new" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
+                <Route path="/admin/post/:id/edit" element={<RequireAuth><AdminPostEditor /></RequireAuth>} />
+                <Route path="/admin" element={<RequireAuth><Admin /></RequireAuth>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

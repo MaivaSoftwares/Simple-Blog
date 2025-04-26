@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,9 +10,10 @@ import { createPost, updatePost } from "@/lib/db";
 interface PostEditorProps {
   post?: BlogPost;
   onSave: () => void;
+  onCancel?: () => void;
 }
 
-export function PostEditor({ post, onSave }: PostEditorProps) {
+export function PostEditor({ post, onSave, onCancel }: PostEditorProps) {
   const [formData, setFormData] = useState({
     title: "",
     excerpt: "",
@@ -21,6 +21,7 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
     coverImage: "",
     authorName: "Admin",
     authorAvatar: "",
+    category: "",
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +33,7 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
         excerpt: post.excerpt,
         content: post.content,
         coverImage: post.coverImage || "",
+        category: post.category,
         authorName: post.author.name,
         authorAvatar: post.author.avatar || "",
       });
@@ -49,8 +51,8 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content) {
-      toast.error("Title and content are required");
+    if (!formData.title || !formData.content || !formData.category) {
+      toast.error("Title, content, and category are required");
       return;
     }
     
@@ -62,6 +64,7 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
         excerpt: formData.excerpt || formData.content.substring(0, 150) + "...",
         content: formData.content,
         coverImage: formData.coverImage || undefined,
+        category: formData.category,
         author: {
           name: formData.authorName,
           avatar: formData.authorAvatar || undefined,
@@ -93,6 +96,18 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
           value={formData.title}
           onChange={handleChange}
           placeholder="Post title"
+          required
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <Input
+          id="category"
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+          placeholder="Category"
           required
         />
       </div>
@@ -155,7 +170,12 @@ export function PostEditor({ post, onSave }: PostEditorProps) {
         />
       </div>
       
-      <div className="flex justify-end">
+      <div className="flex justify-end space-x-2">
+        {onCancel && (
+          <Button variant="outline" type="button" onClick={() => onCancel()}>
+            Cancel
+          </Button>
+        )}
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Saving..." : (post ? "Update Post" : "Create Post")}
         </Button>
