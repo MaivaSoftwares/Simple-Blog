@@ -1,18 +1,19 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getPosts, deletePost } from "@/lib/db";
+import { getPosts, deletePost, getPost, createPost } from "@/lib/db";
 import { BlogPost } from "./BlogCard";
-import { CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit, Trash2, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChatSidebar } from "@/components/ChatSidebar";
+import { ChatBox } from "@/components/ChatBox";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -34,8 +35,10 @@ export function AdminPanel() {
   const [newPassword, setNewPassword] = useState("");
   const [isChanging, setIsChanging] = useState(false);
   const [showChat, setShowChat] = useState<boolean>(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['me'], queryFn: fetchMe });
 
   const loadPosts = async (category?: string) => {
@@ -78,6 +81,23 @@ export function AdminPanel() {
     }
   };
 
+  const handleDuplicate = async (postId: string) => {
+    setDuplicatingId(postId);
+    try {
+      const original = await getPost(postId);
+      if (!original) throw new Error('Original post not found');
+      const { _id, createdAt, updatedAt, ...data } = original;
+      await createPost(data);
+      toast.success('Post duplicated');
+      loadPosts(categoryFilter);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to duplicate post');
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -88,6 +108,7 @@ export function AdminPanel() {
 
   const handleLogout = async () => {
     await fetch(`${API_URL}/api/admin/logout`, { method: "POST", credentials: "include" });
+    queryClient.removeQueries({ queryKey: ['me'] });
     navigate("/login", { replace: true });
   };
 
@@ -114,7 +135,7 @@ export function AdminPanel() {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="relative flex h-full">
       <div className={`${showChat ? "w-3/5" : "w-full"} space-y-6`}>
         <div className="flex items-center justify-between">
           <div>
@@ -148,9 +169,29 @@ export function AdminPanel() {
             <Card>
               <CardContent className="p-0">
                 {isLoading ? (
-                  <div className="flex justify-center items-center p-8">
-                    <p>Loading posts...</p>
-                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Author</TableHead>
+                        <TableHead>Published</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {[...Array(5)].map((_, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Skeleton className="h-6 w-6 inline-block" />
+                            <Skeleton className="h-6 w-6 inline-block ml-2" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -193,6 +234,15 @@ export function AdminPanel() {
                               >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                                 <span className="sr-only">Delete</span>
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDuplicate(post._id)}
+                                disabled={duplicatingId === post._id}
+                              >
+                                <Copy className="h-4 w-4" />
+                                <span className="sr-only">Duplicate</span>
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -261,8 +311,8 @@ export function AdminPanel() {
         </AlertDialog>
       </div>
       {showChat && (
-        <div className="w-2/5 h-screen overflow-auto p-4 border-l">
-          <ChatSidebar />
+        <div className="fixed top-16 bottom-0 right-0 w-2/5 p-4 border-l bg-background overflow-hidden z-30">
+          <ChatBox />
         </div>
       )}
     </div>

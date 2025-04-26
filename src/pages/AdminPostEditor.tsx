@@ -4,7 +4,7 @@ import { PostEditor } from "@/components/PostEditor";
 import { getPost } from "@/lib/db";
 import { BlogPost } from "@/components/BlogCard";
 import { toast } from "sonner";
-import { ChatSidebar } from "@/components/ChatSidebar";
+import { ChatBox } from "@/components/ChatBox";
 import { Button } from "@/components/ui/button";
 
 export default function AdminPostEditor() {
@@ -39,21 +39,23 @@ export default function AdminPostEditor() {
   };
 
   return (
-    <div className="flex h-full">
-      <div className={`${showChat ? "w-3/5" : "w-full"} container py-8 px-4`}>
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">
-            {id ? "Edit Post" : "Create New Post"}
-          </h1>
-          <Button variant="outline" onClick={() => setShowChat(prev => !prev)}>
-            {showChat ? "Hide Chat" : "Chat"}
-          </Button>
+    <div className="relative">
+      <div className={`container mx-auto py-8 px-4 ${showChat ? 'pr-[40vw]' : ''}`}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">
+              {id ? "Edit Post" : "Create New Post"}
+            </h1>
+            <Button variant="outline" onClick={() => setShowChat(prev => !prev)}>
+              {showChat ? "Hide Chat" : "Chat"}
+            </Button>
+          </div>
+          <PostEditor post={post} onSave={handleSave} onCancel={() => navigate("/admin")} />
         </div>
-        <PostEditor post={post} onSave={handleSave} onCancel={() => navigate("/admin")} />
       </div>
       {showChat && (
-        <div className="w-2/5 h-screen overflow-auto p-4 border-l">
-          <ChatSidebar />
+        <div className="fixed top-16 bottom-0 right-0 w-2/5 p-4 border-l bg-background overflow-hidden z-30">
+          <ChatBox />
         </div>
       )}
     </div>

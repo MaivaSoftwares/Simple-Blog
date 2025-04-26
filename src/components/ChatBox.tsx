@@ -9,19 +9,19 @@ interface Message {
   text: string;
 }
 
-export function ChatSidebar() {
+export function ChatBox() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sendMessage = useCallback(() => {
     if (!input.trim()) return;
-    const userMsg: Message = { id: Date.now(), author: "user", text: input }; 
-    setMessages((prev) => [...prev, userMsg]);
+    const userMsg: Message = { id: Date.now(), author: "user", text: input };
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
     // TODO: integrate AI response
     const botMsg: Message = { id: Date.now() + 1, author: "assistant", text: "Hello! How can I assist you with your post?" };
-    setMessages((prev) => [...prev, botMsg]);
+    setMessages(prev => [...prev, botMsg]);
   }, [input]);
 
   useEffect(() => {
@@ -31,16 +31,16 @@ export function ChatSidebar() {
   }, [messages]);
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full relative">
       <CardHeader>
         <CardTitle>AI Assistant</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col h-full overflow-hidden">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2 chat-scroll">
+      <CardContent className="flex flex-col relative flex-1 overflow-hidden">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-2 chat-scroll pb-20">
           {messages.length === 0 ? (
             <p className="text-sm text-muted-foreground">Start a conversation...</p>
           ) : (
-            messages.map((msg) => (
+            messages.map(msg => (
               <div
                 key={msg.id}
                 className={`px-3 py-2 rounded-lg max-w-[80%] ${
@@ -54,13 +54,13 @@ export function ChatSidebar() {
             ))
           )}
         </div>
-        <div className="p-4 bg-background sticky bottom-0 flex space-x-2">
+        <div className="absolute bottom-0 left-0 w-full p-4 bg-background border-t flex space-x-2">
           <Input
             className="flex-1"
             placeholder="Ask AI..."
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && sendMessage()}
           />
           <Button onClick={sendMessage}>Send</Button>
         </div>
